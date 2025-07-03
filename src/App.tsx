@@ -19,6 +19,7 @@ function App() {
 
     const filtered = { ...stockData.data };
 
+    // Apply category filter
     if (categoryFilter) {
       Object.keys(filtered).forEach(key => {
         if (key !== 'updated_at' && key !== categoryFilter) {
@@ -27,6 +28,7 @@ function App() {
       });
     }
 
+    // Apply search filter
     if (searchQuery) {
       Object.keys(filtered).forEach(key => {
         if (key !== 'updated_at') {

@@ -1,4 +1,10 @@
-import { Wrench, Egg, Sprout, Flower2, Palette, Hammer, Droplets, Scissors, Shovel, Apple, Cherry, Grape, Carrot, Wheat, TreePine, Home, Armchair, Lamp, Package, Gift, Star, Heart, Sparkles, Crown, Diamond, Gem, Shield, Zap, Flame, Snowflake, Sun, Moon, Cloud, Umbrella, Leaf, Flower, Bug, Fish, Bird, Orbit as Rabbit, Cat, Dog, DivideIcon as LucideIcon } from 'lucide-react';
+import { 
+  Wrench, Egg, Sprout, Flower2, Palette, Hammer, Droplets, Scissors, 
+  Shovel, Apple, Cherry, Grape, Carrot, Wheat, TreePine, Home, Armchair, 
+  Lamp, Package, Gift, Star, Heart, Sparkles, Crown, Diamond, Gem, 
+  Shield, Zap, Flame, Snowflake, Sun, Moon, Cloud, Umbrella, Leaf, 
+  Flower, Bug, Fish, Bird, Rabbit, Cat, Dog, LucideIcon 
+} from 'lucide-react';
 
 // Icon mapping for different item types
 export const getItemIcon = (itemName: string): LucideIcon => {
@@ -54,6 +60,7 @@ export const getCategoryIcon = (category: string): LucideIcon => {
     case 'seed': return Sprout;
     case 'honey': return Flower2;
     case 'cosmetics': return Palette;
+    case 'travelingmerchant': return Package;
     default: return Package;
   }
 };

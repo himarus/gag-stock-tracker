@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ApiResponse, WeatherData } from './types';
+import { ApiResponse, WeatherData } from '../types';
+import { formatDiscordTimestamp } from '../utils/timeUtils';
 
 const proxy = 'https://corsproxy.io/?';
 const STOCK_API_URL = proxy + 'https://gagstock.gleeze.com/grow-a-garden';
@@ -12,22 +13,14 @@ export const useStockData = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const processWeatherDescription = (desc: string): string => {
-    // Convert Discord timestamp format to readable time
-    return desc.replace(/<t:(\d+):R>/g, (match, timestamp) => {
-      const date = new Date(parseInt(timestamp) * 1000);
-      return date.toLocaleTimeString();
-    });
-  };
-
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const [stockResponse, weatherResponse] = await Promise.all([
-        fetch(STOCK_API_URL),
-        fetch(WEATHER_API_URL)
+        fetch(STOCK_API_URL, { cache: 'no-store' }),
+        fetch(WEATHER_API_URL, { cache: 'no-store' })
       ]);
 
       if (!stockResponse.ok) {
@@ -44,24 +37,31 @@ export const useStockData = () => {
       // Process weather data
       const processedWeather: WeatherData = {
         ...weatherResult,
-        description: processWeatherDescription(weatherResult.description),
-        effectDescription: processWeatherDescription(weatherResult.effectDescription)
+        description: formatDiscordTimestamp(weatherResult.description),
+        effectDescription: formatDiscordTimestamp(weatherResult.effectDescription)
       };
 
-      // Process stock data to ensure consistent structure
+      // Ensure all categories have at least an empty items array
+      const categories: (keyof StockData)[] = [
+        'gear', 'egg', 'seed', 'honey', 'cosmetics', 'travelingmerchant'
+      ];
+      
       const processedStock: ApiResponse = {
         ...stockResult,
         data: {
           ...stockResult.data,
-          // Ensure all categories have items array
-          gear: stockResult.data.gear || { items: [] },
-          egg: stockResult.data.egg || { items: [] },
-          seed: stockResult.data.seed || { items: [] },
-          honey: stockResult.data.honey || { items: [] },
-          cosmetics: stockResult.data.cosmetics || { items: [] },
-          travelingmerchant: stockResult.data.travelingmerchant || { items: [], status: 'leaved' }
+          updated_at: stockResult.data.updated_at || new Date().toISOString()
         }
       };
+
+      // Ensure each category has items array
+      categories.forEach(category => {
+        if (!processedStock.data[category]) {
+          processedStock.data[category] = { items: [] };
+        } else if (!processedStock.data[category].items) {
+          processedStock.data[category].items = [];
+        }
+      });
 
       setStockData(processedStock);
       setWeatherData(processedWeather);
@@ -88,14 +88,6 @@ export const useStockData = () => {
     loading,
     error,
     lastUpdated,
-    refetch: fetchData,
-    categories: [
-      'gear', 
-      'egg', 
-      'seed', 
-      'honey', 
-      'cosmetics', 
-      'travelingmerchant'
-    ] as const
+    refetch: fetchData
   };
 };

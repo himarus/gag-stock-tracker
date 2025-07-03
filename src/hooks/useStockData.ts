@@ -1,64 +1,75 @@
-import { useState, useEffect } from 'react';
-import { ApiResponse, WeatherData } from '../types';
+import React from 'react';
+import { useStockData } from './useStockData';
 
-const proxy = 'https://corsproxy.io/?';
-const STOCK_API_URL = proxy + 'https://gagstock.gleeze.com/grow-a-garden';
-const WEATHER_API_URL = proxy + 'https://growagardenstock.com/api/stock/weather';
+const StockDisplay: React.FC = () => {
+  const { 
+    stockData, 
+    weatherData, 
+    loading, 
+    error, 
+    lastUpdated, 
+    refetch,
+    categories
+  } = useStockData();
 
-export const useStockData = () => {
-  const [stockData, setStockData] = useState<ApiResponse | null>(null);
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  if (loading) return <div>Loading stock data...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!stockData || !weatherData) return <div>No data available</div>;
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  return (
+    <div className="stock-container">
+      <div className="header">
+        <h1>Grow a Garden Stock</h1>
+        <button onClick={refetch}>Refresh</button>
+        <p>Last updated: {lastUpdated?.toLocaleString()}</p>
+        <p>API updated at: {stockData.updated_at}</p>
+      </div>
 
-      const [stockResponse, weatherResponse] = await Promise.all([
-        fetch(STOCK_API_URL),
-        fetch(WEATHER_API_URL)
-      ]);
+      <div className="weather-section">
+        <h2>
+          {weatherData.icon} {weatherData.currentWeather}
+        </h2>
+        <div dangerouslySetInnerHTML={{ __html: weatherData.description }} />
+        <p><strong>Visual Cue:</strong> {weatherData.visualCue}</p>
+        <p><strong>Crop Bonuses:</strong> {weatherData.cropBonuses}</p>
+      </div>
 
-      if (!stockResponse.ok) {
-        throw new Error(`Stock API error: ${stockResponse.status}`);
-      }
+      <div className="stock-sections">
+        {categories.map((category) => {
+          const categoryData = stockData.data[category];
+          if (!categoryData) return null;
 
-      if (!weatherResponse.ok) {
-        throw new Error(`Weather API error: ${weatherResponse.status}`);
-      }
+          return (
+            <div key={category} className="category-section">
+              <h2>{category.toUpperCase()}</h2>
+              
+              {categoryData.status && (
+                <p>Status: {categoryData.status}</p>
+              )}
+              
+              {categoryData.countdown && (
+                <p>Refreshes in: {categoryData.countdown}</p>
+              )}
+              
+              {categoryData.appearIn && (
+                <p>Appears in: {categoryData.appearIn}</p>
+              )}
 
-      const stockResult: ApiResponse = await stockResponse.json();
-      const weatherResult: WeatherData = await weatherResponse.json();
-
-      setStockData(stockResult);
-      setWeatherData(weatherResult);
-      setLastUpdated(new Date());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-      console.error('API Error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    
-    // Auto-refresh every 5 minutes
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  return {
-    stockData,
-    weatherData,
-    loading,
-    error,
-    lastUpdated,
-    refetch: fetchData
-  };
+              <div className="items-grid">
+                {categoryData.items.map((item, index) => (
+                  <div key={index} className="item-card">
+                    <span className="item-emoji">{item.emoji || '❓'}</span>
+                    <span className="item-name">{item.name}</span>
+                    <span className="item-quantity">×{item.quantity}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
+
+export default StockDisplay;

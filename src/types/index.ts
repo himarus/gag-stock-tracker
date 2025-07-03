@@ -2,14 +2,14 @@ export interface StockItem {
   name: string;
   quantity: number;
   emoji: string;
-  image?: string; // Keeping image as optional for backward compatibility
+  image?: string;
 }
 
 export interface CategoryData {
   items: StockItem[];
-  countdown?: string;
+  countdown?: string | null;
   status?: string;
-  appearIn?: string;
+  appearIn?: string | null;
 }
 
 export interface StockData {

@@ -1,12 +1,15 @@
 export interface StockItem {
   name: string;
   quantity: number;
-  image: string;
+  emoji: string;
+  image?: string; // Keeping image as optional for backward compatibility
 }
 
 export interface CategoryData {
   items: StockItem[];
-  countdown: string;
+  countdown?: string;
+  status?: string;
+  appearIn?: string;
 }
 
 export interface StockData {
@@ -15,6 +18,7 @@ export interface StockData {
   seed: CategoryData;
   honey: CategoryData;
   cosmetics: CategoryData;
+  travelingmerchant: CategoryData;
   updated_at: string;
 }
 
@@ -23,7 +27,7 @@ export interface WeatherData {
   description: string;
   visualCue: string;
   cropBonuses: string;
-  mutations: string[];
+  mutations: any[];
   rarity: string;
   updatedAt: number;
   currentWeather: string;
@@ -37,4 +41,10 @@ export interface ApiResponse {
   data: StockData;
 }
 
-export type CategoryType = 'gear' | 'egg' | 'seed' | 'honey' | 'cosmetics';
+export type CategoryType = 
+  | 'gear' 
+  | 'egg' 
+  | 'seed' 
+  | 'honey' 
+  | 'cosmetics'
+  | 'travelingmerchant';

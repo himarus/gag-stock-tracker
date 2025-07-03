@@ -20,7 +20,13 @@ export const formatTimeAgo = (date: Date): string => {
   return `${diffInDays}d ago`;
 };
 
-export const parseCountdown = (countdown: string): { hours: number; minutes: number; seconds: number } => {
+export const parseCountdown = (countdown: string | null | undefined): { 
+  hours: number; 
+  minutes: number; 
+  seconds: number 
+} => {
+  if (!countdown) return { hours: 0, minutes: 0, seconds: 0 };
+  
   const match = countdown.match(/(\d+)h\s*(\d+)m\s*(\d+)s/);
   if (match) {
     return {
@@ -32,7 +38,9 @@ export const parseCountdown = (countdown: string): { hours: number; minutes: num
   return { hours: 0, minutes: 0, seconds: 0 };
 };
 
-export const formatCountdown = (countdown: string): string => {
+export const formatCountdown = (countdown: string | null | undefined): string => {
+  if (!countdown) return 'Not available';
+  
   const { hours, minutes, seconds } = parseCountdown(countdown);
   
   if (hours > 0) {
@@ -42,4 +50,12 @@ export const formatCountdown = (countdown: string): string => {
     return `${minutes}m ${seconds}s`;
   }
   return `${seconds}s`;
+};
+
+// Format Discord timestamps to readable format
+export const formatDiscordTimestamp = (text: string): string => {
+  return text.replace(/<t:(\d+):R>/g, (match, timestamp) => {
+    const date = new Date(parseInt(timestamp) * 1000);
+    return date.toLocaleTimeString();
+  });
 };
